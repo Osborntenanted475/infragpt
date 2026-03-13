@@ -20,42 +20,50 @@ spec:
       labels:
         app: infragpt
       annotations:
-        prometheus.io/scrape: 'true'
-        prometheus.io/port: '5000'
-        prometheus.io/path: '/metrics'
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "5000"
+        prometheus.io/path: "/metrics"
     spec:
       containers:
         - name: infragpt
           image: salmonstone/infragpt:IMAGE_TAG_PLACEHOLDER
           imagePullPolicy: Always
+
           ports:
             - containerPort: 5000
+
           env:
             - name: GROQ_API_KEY
               valueFrom:
                 secretKeyRef:
                   name: infragpt-secrets
                   key: GROQ_API_KEY
+
           resources:
             requests:
-              cpu: '100m'
-              memory: '128Mi'
+              cpu: "100m"
+              memory: "128Mi"
             limits:
-              cpu: '500m'
-              memory: '512Mi'
+              cpu: "500m"
+              memory: "512Mi"
+
           livenessProbe:
             httpGet:
               path: /health
               port: 5000
-            initialDelaySeconds: 30
+            initialDelaySeconds: 40
             periodSeconds: 10
-            failureThreshold: 3
+            timeoutSeconds: 5
+            failureThreshold: 5
+
           readinessProbe:
             httpGet:
               path: /health
               port: 5000
-            initialDelaySeconds: 10
+            initialDelaySeconds: 20
             periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
 ---
 apiVersion: v1
 kind: Service
