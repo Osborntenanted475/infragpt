@@ -2,11 +2,9 @@ pipeline {
     agent any
 
     environment {
-        DOCKERHUB_CREDS = credentials('dockerhub-creds')
-        DOCKERHUB_REPO  = 'salmonstone/infragpt'
-        IMAGE_TAG       = "${BUILD_NUMBER}"
-        GROQ_API_KEY    = credentials('groq-api-key')
-        K8S_NS          = 'infragpt'
+        DOCKERHUB_REPO = 'salmonstone/infragpt'
+        IMAGE_TAG      = "${BUILD_NUMBER}"
+        K8S_NS         = 'infragpt'
     }
 
     stages {
@@ -24,7 +22,6 @@ pipeline {
                 echo '--- Building Docker image ---'
                 sh 'docker build -t ${DOCKERHUB_REPO}:${IMAGE_TAG} .'
                 sh 'docker tag ${DOCKERHUB_REPO}:${IMAGE_TAG} ${DOCKERHUB_REPO}:latest'
-                sh 'docker images | grep infragpt'
             }
         }
 
@@ -44,9 +41,15 @@ pipeline {
         stage('📤 Push to DockerHub') {
             steps {
                 echo '--- Pushing image to DockerHub ---'
-                sh 'echo ${DOCKERHUB_CREDS_PSW} | docker login -u ${DOCKERHUB_CREDS_USR} --password-stdin'
-                sh 'docker push ${DOCKERHUB_REPO}:${IMAGE_TAG}'
-                sh 'docker push ${DOCKERHUB_REPO}:latest'
+                withCredentials([usernamePassword(
+                    credentialsId: 'dockerhub-creds',
+                    usernameVariable: 'DOCKER_USER',
+                    passwordVariable: 'DOCKER_PASS'
+                )]) {
+                    sh 'echo ${DOCKER_PASS} | docker login -u ${DOCKER_USER} --password-stdin'
+                    sh 'docker push ${DOCKERHUB_REPO}:${IMAGE_TAG}'
+                    sh 'docker push ${DOCKERHUB_REPO}:latest'
+                }
             }
         }
 
@@ -63,15 +66,20 @@ pipeline {
         stage('☸️ Deploy to EKS') {
             steps {
                 echo '--- Deploying to Kubernetes ---'
-                sh 'aws eks update-kubeconfig --region ap-south-1 --name infragpt-cluster'
-                sh 'kubectl create namespace ${K8S_NS} --dry-run=client -o yaml | kubectl apply -f -'
-                sh '''kubectl create secret generic infragpt-secrets \
-                        --from-literal=GROQ_API_KEY=${GROQ_API_KEY} \
-                        --namespace=${K8S_NS} \
-                        --dry-run=client -o yaml | kubectl apply -f -'''
-                sh "sed -i 's|IMAGE_TAG_PLACEHOLDER|${IMAGE_TAG}|g' k8s/deployment.yaml"
-                sh 'kubectl apply -f k8s/ --namespace=${K8S_NS}'
-                sh 'kubectl rollout status deployment/infragpt --namespace=${K8S_NS} --timeout=180s'
+                withCredentials([string(
+                    credentialsId: 'groq-api-key',
+                    variable: 'GROQ_API_KEY'
+                )]) {
+                    sh 'aws eks update-kubeconfig --region ap-south-1 --name infragpt-cluster'
+                    sh 'kubectl create namespace ${K8S_NS} --dry-run=client -o yaml | kubectl apply -f -'
+                    sh '''kubectl create secret generic infragpt-secrets \
+                            --from-literal=GROQ_API_KEY=${GROQ_API_KEY} \
+                            --namespace=${K8S_NS} \
+                            --dry-run=client -o yaml | kubectl apply -f -'''
+                    sh "sed -i 's|IMAGE_TAG_PLACEHOLDER|${IMAGE_TAG}|g' k8s/deployment.yaml"
+                    sh 'kubectl apply -f k8s/ --namespace=${K8S_NS}'
+                    sh 'kubectl rollout status deployment/infragpt --namespace=${K8S_NS} --timeout=180s'
+                }
             }
         }
 
@@ -96,12 +104,6 @@ pipeline {
         }
         failure {
             echo '❌ PIPELINE FAILED - check stage logs above'
-        }
-        always {
-            script {
-                sh 'docker image prune -f || true'
-                sh 'docker logout || true'
-            }
         }
     }
 }
