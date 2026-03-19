@@ -53,15 +53,15 @@ pipeline {
             }
         }
 
-        stage('🏗️ Terraform Apply') {
-            steps {
-                echo '--- Provisioning AWS infrastructure ---'
-                dir('terraform') {
-                    sh 'terraform init'
-                    sh 'terraform apply -auto-approve'
-                }
-            }
-        }
+        // stage('🏗️ Terraform Apply') {
+        //     steps {
+        //         echo '--- Provisioning AWS infrastructure ---'
+        //         dir('terraform') {
+        //             sh 'terraform init'
+        //             sh 'terraform apply -auto-approve'
+        //         }
+        //     }
+        // }
 
         stage('☸️ Deploy to EKS') {
             steps {
