@@ -65,7 +65,7 @@ metadata:
 spec:
   ingressClassName: nginx
   rules:
-    - host: kibana.YOUR_DOMAIN.com
+    - host: kibana.infragpt.online
       http:
         paths:
           - path: /

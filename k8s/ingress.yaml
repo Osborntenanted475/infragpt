@@ -1,5 +1,5 @@
 ---
-# ── Replace YOUR_DOMAIN.com with your actual domain ─────────
+# ── Replace infragpt.online with your actual domain ─────────
 # OR use the Nginx LB hostname directly (get it after Phase 11)
 apiVersion: networking.k8s.io/v1
 kind: Ingress
@@ -16,7 +16,7 @@ metadata:
 spec:
   ingressClassName: nginx
   rules:
-    - host: infragpt.YOUR_DOMAIN.com
+    - host: infragpt.infragpt.online
       http:
         paths:
           - path: /

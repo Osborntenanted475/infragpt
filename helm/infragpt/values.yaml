@@ -14,7 +14,7 @@ service:
 ingress:
   enabled: true
   className: nginx
-  host: infragpt.YOUR_DOMAIN.com
+  host: infragpt.infragpt.online
   tls:
     enabled: false
 resources:
