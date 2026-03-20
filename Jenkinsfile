@@ -3,7 +3,7 @@ pipeline {
  
   environment {
     DOCKERHUB_CREDENTIALS = credentials('dockerhub-creds')
-    DOCKERHUB_REPO        = '/infragpt'
+    DOCKERHUB_REPO        = 'salmonstone/infragpt'
     IMAGE_TAG             = "${BUILD_NUMBER}"
     GROQ_API_KEY          = credentials('groq-api-key')
     K8S_NAMESPACE         = 'infragpt'
