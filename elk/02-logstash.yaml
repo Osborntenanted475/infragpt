@@ -9,7 +9,7 @@ data:
     http.host: "0.0.0.0"
     path.config: /usr/share/logstash/pipeline
     pipeline.workers: 2
- 
+
   app-logs.conf: |
     input {
       beats { port => 5044  tags => ["app-logs"] }
@@ -33,7 +33,7 @@ data:
         }
       }
     }
- 
+
   k8s-logs.conf: |
     input {
       beats { port => 5045  tags => ["k8s-logs"] }
@@ -58,7 +58,7 @@ data:
         }
       }
     }
- 
+
   jenkins-logs.conf: |
     input {
       tcp { port => 5046  codec => json_lines  tags => ["jenkins-logs"] }
@@ -76,7 +76,7 @@ data:
         }
       }
     }
- 
+
   nginx-logs.conf: |
     input {
       beats { port => 5047  tags => ["nginx-logs"] }
@@ -97,7 +97,7 @@ data:
         }
       }
     }
- 
+
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -164,7 +164,7 @@ spec:
                 path: jenkins-logs.conf
               - key: nginx-logs.conf
                 path: nginx-logs.conf
- 
+
 ---
 apiVersion: v1
 kind: Service
@@ -175,9 +175,19 @@ spec:
   selector:
     app: logstash
   ports:
-    - port: 5044  targetPort: 5044  name: beats-app
-    - port: 5045  targetPort: 5045  name: beats-k8s
-    - port: 5046  targetPort: 5046  name: tcp-jenkins
-    - port: 5047  targetPort: 5047  name: beats-nginx
-    - port: 9600  targetPort: 9600  name: monitoring
+    - port: 5044
+      targetPort: 5044
+      name: beats-app
+    - port: 5045
+      targetPort: 5045
+      name: beats-k8s
+    - port: 5046
+      targetPort: 5046
+      name: tcp-jenkins
+    - port: 5047
+      targetPort: 5047
+      name: beats-nginx
+    - port: 9600
+      targetPort: 9600
+      name: monitoring
   type: ClusterIP
