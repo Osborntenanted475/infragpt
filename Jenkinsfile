@@ -71,9 +71,9 @@ pipeline {
       steps {
         dir('terraform') {
           sh '''
-            terraform init -input=false
-            terraform plan -out=tfplan -input=false
-            terraform apply -input=false tfplan
+            echo "Skipping terraform - infra already running"
+            echo "skip"
+            echo "skip"
           '''
         }
       }
