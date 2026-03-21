@@ -1,6 +1,3 @@
----
-# ── Replace infragpt.online with your actual domain ─────────
-# OR use the Nginx LB hostname directly (get it after Phase 11)
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
@@ -10,11 +7,13 @@ metadata:
     nginx.ingress.kubernetes.io/proxy-body-size: "10m"
     nginx.ingress.kubernetes.io/proxy-read-timeout: "120"
     nginx.ingress.kubernetes.io/limit-rps: "10"
-    nginx.ingress.kubernetes.io/limit-connections: "20"
-    nginx.ingress.kubernetes.io/enable-cors: "true"
-    nginx.ingress.kubernetes.io/cors-allow-methods: "GET, POST, OPTIONS"
+    cert-manager.io/cluster-issuer: letsencrypt-prod
 spec:
   ingressClassName: nginx
+  tls:
+    - hosts:
+        - www.infragpt.online
+      secretName: infragpt-tls
   rules:
     - host: www.infragpt.online
       http:
